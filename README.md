@@ -68,7 +68,7 @@ for any practical embedding use (search, classification, transfer).
 | **Native PyTorch (`torch.compile`)** | **350** | **635** | **607** | **533** | **514** |
 
 Native eager matches the ONNX bridge; `torch.compile` is ~2.5× the bridge at batch 4–16
-and ~5× at batch 1. Native wins because the whole graph stays on-device — the bridge's
+and ~3.5× at batch 1. Native wins because the whole graph stays on-device — the bridge's
 in-graph DFT forces host↔device copies — and compile fuses the conv/SE/activation chain.
 (Measured on a GB10 DGX Spark.)
 
