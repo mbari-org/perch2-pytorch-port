@@ -39,25 +39,28 @@ fin/blue whale sit below its band and are handled by separate detectors.)
 
 ## Results (validated against the reference TensorFlow outputs)
 
-**Numerical parity** — cosine similarity / relative error of the embedding vs the TF reference:
+**Numerical parity** — cosine similarity and relative L2 error of the embedding versus the TensorFlow reference:
 
-| Path | Device | cosine | rel. error |
-|---|---|---|---|
-| Native embedder (fed reference frontend) | CPU | 0.9999999 | ~7e-7 |
-| Native full pipeline (raw audio → embedding) | CPU | 1.0000000 | ~1–5e-5 |
-| Native full pipeline (vs live TF, same-device)      | GB10 GPU | 0.9999998 | ~4e-4      |
-| ONNX bridge (cross-check, `justinchuby/Perch-onnx`) | CPU | — | ~1e-9 |
+| Path                                                | Device   | Cosine similarity | Relative L2 error |
+| --------------------------------------------------- | -------- | ----------------: | ----------------: |
+| Native embedder (fed reference frontend)            | CPU      |         0.9999999 |             ~7e-7 |
+| Native full pipeline (raw audio → embedding)        | CPU      |         1.0000000 |           ~1–5e-5 |
+| Native full pipeline (vs live TF, same-device)      | GB10 GPU |         0.9999998 |             ~4e-4 |
+| ONNX bridge (cross-check, `justinchuby/Perch-onnx`) | CPU      |                 — |             ~1e-9 |
 
-Relative error is reported alongside cosine deliberately: cosine can look ~1.0 while the
-embedding magnitude is still off, so **relative L2 error is the load-bearing number**.
-Verified against the **live TF model** (not just archived references), the port reproduces
-TF embeddings at **relative L2 ~4×10⁻⁴ (GB10 GPU, both models same-device), cosine
-≥0.9999998** across test clips — magnitude-faithful, not merely angle-aligned. (On CPU,
-against archived references, the embedder path is tighter still, ~1e-5.) 
-The frontend alone reproduces the reference spectrogram to ~1e-4 (synthetic
-signals) and ~1e-3 (quiet real recordings; near-floor log sensitivity). GPU parity is
-looser than CPU purely because of float32 / tensor-core accumulation — cosine is unchanged
-for any practical embedding use (search, classification, transfer).
+Here, **cosine similarity** measures agreement in embedding direction (1.0 means identical direction), while **relative L2 error** measures the magnitude of the difference relative to the TensorFlow reference:
+
+`relative L2 error = ||embedding − reference||₂ / ||reference||₂`
+
+Relative L2 error is reported alongside cosine deliberately: cosine can be ~1.0 even when the embedding magnitude is wrong, so **relative L2 error is the load-bearing number**.
+
+Verified against the **live TF model** (not just archived references), the port reproduces TF embeddings at **relative L2 error ~4×10⁻⁴ (GB10 GPU, both models same-device), cosine similarity ≥0.9999998** across test clips — magnitude-faithful, not merely angle-aligned. On CPU, against archived references, the embedder path is tighter still, ~1e-5.
+
+The frontend alone reproduces the reference spectrogram to ~1e-4 (synthetic signals) and ~1e-3 (quiet real recordings; near-floor log sensitivity). GPU parity is looser than CPU purely because of float32/tensor-core accumulation; cosine similarity is unchanged for practical embedding uses such as search, classification, and transfer.
+
+
+
+
 
 **Throughput on the GB10** (clips/sec, 5 s clips @ 32 kHz):
 
