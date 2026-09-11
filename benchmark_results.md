@@ -4,6 +4,8 @@
 - base clip: clip00_input.npy, 5 s @ 32 kHz, peak-normed 0.25
 - warmup 8, up to 40 timed iters / 8.0s per cell
 
+**DFT variants.** DFT = Discrete Fourier Transform. `perch_v2 (DFT)` is the original ONNX graph with its DFT operation in-graph; on CUDA this introduces host↔device transfers. `perch_v2_no_dft` is the alternate ONNX path used to avoid that bottleneck. This distinction is specific to the ONNX implementation — the native PyTorch frontend computes the equivalent spectral transform directly with `torch.fft.rfft` while remaining on-device.
+
 ### Latency (ms per run) — mean ± std (min)
 
 | Model | Provider | b=1 | b=4 | b=8 | b=16 | b=32 |
